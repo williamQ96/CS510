@@ -6,6 +6,8 @@ public class Observer : MonoBehaviour
 {
     public Transform player;
     public GameEnding gameEnding;
+    public float rotationSpeed = 8f; // Speed of ghost rotation interpolation
+    public float detectionAngleThreshold = 0.3f; // Roughly ~ 72 degrees
 
     bool m_IsPlayerInRange;
 
@@ -61,7 +63,7 @@ public class Observer : MonoBehaviour
             Vector3 directionToPlayer = (player.position - transform.position).normalized; // Calculate the normalized direction
             float dotProduct = Vector3.Dot(transform.forward, directionToPlayer); // Compute dot product
 
-            if (dotProduct > 0.3f) // If dot product roughly  > 72 degrees, player is in front of ghost
+            if (dotProduct > detectionAngleThreshold) // If dot product roughly  > 72 degrees, player is in front of ghost
             {
                 Vector3 rayOrigin = transform.position + Vector3.up;
                 Ray ray = new Ray(rayOrigin, directionToPlayer);
@@ -75,6 +77,10 @@ public class Observer : MonoBehaviour
                     }
                 }
             }
+            // Smoothly rotate towards the player
+            Quaternion lookRotation = Quaternion.LookRotation(new Vector3(directionToPlayer.x, 0, directionToPlayer.z)); 
+            // Gradually interpolate the ghost's rotation toward the target rotation
+            transform.rotation = Quaternion.Lerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed); 
         }
 
         // if (m_IsPlayerInRange)
